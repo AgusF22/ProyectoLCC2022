@@ -73,7 +73,7 @@ class Game extends React.Component {
     //        [r,b,b,v,p,y,p,r,b,g,p,y,b,r],
     //        [v,g,p,b,v,v,g,g,g,b,v,g,g,g]],r, Grid)
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
-    const queryS = "flick(" + gridS + "," + color + ", Grid)";
+    const queryS = "flick(" + gridS + ",cell(0,0," + this.state.grid[0][0] + ")," + color + ", Number, Grid, Fin)";
     this.setState({
       waiting: true
     });

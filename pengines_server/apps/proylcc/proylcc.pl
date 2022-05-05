@@ -3,6 +3,8 @@
 		flick/3
 	]).
 
+:- use_module(proylcc:convert).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % flick(+Grid, +Color, -FGrid)
@@ -16,61 +18,56 @@ flick(Grid, Color, FGrid):-
 	Color \= X,
 	FGrid = [[Color|Xs]|Fs].
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% gridToCoords(+Grid, -CoordsList)
-%
-% CoordsList es la grilla Grid expresada como lista de celdas cell(X, Y, Color).
 
-gridToCoords(Grid, CoordsList) :-
-	gridToCoordsAux(Grid, 0, CoordsList).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% gridToCoordsAux(+Grid, +I, -CoordsList)
-%
-% CoordsList es la grilla Grid expresada como lista de celdas cell(X, Y, Color).
-% I es un contador de filas.
+flick(Grid, Origin, Color, PaintedNumber, FGrid, Finished) :-
+	Origin = cell(_, _, _),
+	gridToCoords(Grid, CoordsList),
+	adjacentsC(CoordsList, [Origin], [], AdjacentsC),
+	paint(CoordsList, AdjacentsC, Color, PaintedNumber, FCoordsList),
+	finished(FCoordsList, Finished),
+	coordsToGrid(FCoordsList, FGrid).
 
-gridToCoordsAux([], _, []).
-gridToCoordsAux(Grid, I, CoordsList) :-
-	Grid = [F | Fs],
-    rowToCoords(F, I, 0, CoordsList1),
-    I1 is I + 1,
-    gridToCoordsAux(Fs, I1, CoordsList2),
-    append(CoordsList1, CoordsList2, CoordsList).
+paint([], _, _, 0, []).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% rowToCoords(+Row, +I, +J, -CoordsList)
-%
-% CoordsList es la fila Row expresada como lista de celdas cell(X, Y, Color).
-% I es el numero de fila actual, y J es el contador de elementos de la fila.
+paint(CoordsList, ToPaint, Color, PaintedNumber, PCoordsList) :-
+	CoordsList = [cell(X, Y, C) | CoordsList1],
+    member(cell(X, Y, C), ToPaint),
+    remove(ToPaint, cell(X, Y, C), ToPaint1),
+	paint(CoordsList1, ToPaint1, Color, PaintedNumber1, PCoordsList1),
+	PaintedNumber is PaintedNumber1 + 1,
+	PCoordsList = [cell(X, Y, Color) | PCoordsList1], !.
 
-rowToCoords([], _, _, []) :- !.
-rowToCoords(Row, I, J, CoordsList) :-
-	Row = [X | Xs],
-	J1 is J + 1,
-	rowToCoords(Xs, I, J1, CoordsList1),
-	CoordsList = [cell(I, J, X) | CoordsList1].
+paint(CoordsList, ToPaint, Color, PaintedNumber, PCoordsList) :-
+	CoordsList = [cell(X, Y, C) | CoordsList1],
+	paint(CoordsList1, ToPaint, Color, PaintedNumber, PCoordsList1),
+	PCoordsList = [cell(X, Y, C) | PCoordsList1].
 
-	
+remove(List, E, Res) :-
+    append(L1, [E | L2], List),
+    append(L1, L2, Res).
 
-coordsToGrid(CoordsList, Grid) :-
-	coordsToGridAux(CoordsList, 0, Grid).
+adjacentsC(_, [], Visited, Visited) :- !.
+adjacentsC(CoordsList, ToVisit, Visited, Res) :-
+	ToVisit = [Cell | ToVisitRem],
+	sameColorAdjacents(Cell, CoordsList, Adjacents),
+	findall(cell(X, Y, C), (member(cell(X, Y, C), Adjacents),
+                          	\+ member(cell(X, Y, C), Visited)), NonVisitedAdjacents),
+	append(NonVisitedAdjacents, ToVisitRem, ToVisitNext),
+    Visited1 = [Cell | Visited],
+	adjacentsC(CoordsList, ToVisitNext, Visited1, Res).
 
-coordsToGridAux([], _, []) :- !.
+sameColorAdjacents(Cell, CoordsList, AdjacentsList) :-
+	Cell = cell(X, Y, C),
+	findall(cell(X1, Y1, C), (member(cell(X1, Y1, C), CoordsList),
+								X1 >= 0, Y1 >= 0,
+								(X1 is X + 1, Y1 is Y;
+								X1 is X - 1, Y1 is Y;
+								Y1 is Y + 1, X1 is X;
+								Y1 is Y - 1, X1 is X)), AdjacentsList).
 
-coordsToGridAux(CoordsList, I, Grid) :-
-	findall(cell(X, Y, C), (member(cell(X, Y, C), CoordsList), X is I), CellsRow),
-	append(CellsRow, CoordsList1, CoordsList),
-	I1 is I + 1,
-	coordsToGridAux(CoordsList1, I1, Grid1),
-    rowToColorList(CellsRow, Row),
-	Grid = [Row | Grid1].
 
-rowToColorList([], []).
-rowToColorList(Row, List) :-
-    Row = [cell(_, _, Color) | Row1],
-    rowToColorList(Row1, List1),
-    List = [Color | List1].
+finished(CoordsList, 1) :-
+	CoordsList = [cell(_, _, Color) | _],
+	forall(member(cell(_, _, C), CoordsList), C = Color), !.
+finished(_, 0).
