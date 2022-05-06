@@ -32,6 +32,7 @@ class Game extends React.Component {
     this.state = {
       turns: 0,
       grid: null,
+      captured: 0,
       complete: false,  // true if game is complete, false otherwise
       waiting: false
     };
@@ -73,7 +74,7 @@ class Game extends React.Component {
     //        [r,b,b,v,p,y,p,r,b,g,p,y,b,r],
     //        [v,g,p,b,v,v,g,g,g,b,v,g,g,g]],r, Grid)
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
-    const queryS = "flick(" + gridS + ",cell(0,0," + this.state.grid[0][0] + ")," + color + ", Number, Grid, Fin)";
+    const queryS = "flick(" + gridS + ",cell(0,0," + this.state.grid[0][0] + ")," + color + ", Captured, Grid, Fin)";
     this.setState({
       waiting: true
     });
@@ -82,6 +83,7 @@ class Game extends React.Component {
         this.setState({
           grid: response['Grid'],
           turns: this.state.turns + 1,
+          captured: response['Captured'],
           waiting: false
         });
       } else {
@@ -112,6 +114,10 @@ class Game extends React.Component {
           <div className="turnsPanel">
             <div className="turnsLab">Turns</div>
             <div className="turnsNum">{this.state.turns}</div>
+          </div>
+          <div className="capturedPanel">
+            <div className="capturedLab">Captured</div>
+            <div className="capturedNum">{this.state.captured}</div>
           </div>
         </div>
         <Board grid={this.state.grid} />
