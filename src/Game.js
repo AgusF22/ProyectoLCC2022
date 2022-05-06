@@ -14,15 +14,17 @@ const colors = ["r", "v", "p", "g", "b", "y"];  // red, violet, pink, green, blu
  */
 
 export function colorToCss(color) {
+  var toReturn;
   switch (color) {
-    case "r": return "#FF6961";
-    case "v": return "#B19CD8";
-    case "p": return "#FFD1DC";
-    case "g": return "#8FE381";
-    case "b": return "#78C5DC";
-    case "y": return "#FDFD96";
+    case "r": toReturn = "#FF6961"; break;
+    case "v": toReturn = "#B19CD8"; break;
+    case "p": toReturn = "#FFD1DC"; break;
+    case "g": toReturn = "#8FE381"; break;
+    case "b": toReturn = "#78C5DC"; break;
+    case "y": toReturn = "#FDFD96"; break;
+    default:  toReturn = "white";
   }
-  return color;
+  return toReturn;
 }
 class Game extends React.Component {
 
@@ -34,6 +36,9 @@ class Game extends React.Component {
       turns: 0,
       grid: null,
       captured: 0,
+      originX: 0,
+      originY: 0,
+      gameStarted: false,
       history: [],
       complete: false,  // true if game is complete, false otherwise
       waiting: false
@@ -76,7 +81,9 @@ class Game extends React.Component {
     //        [r,b,b,v,p,y,p,r,b,g,p,y,b,r],
     //        [v,g,p,b,v,v,g,g,g,b,v,g,g,g]],r, Grid)
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
-    const queryS = "flick(" + gridS + ",cell(0,0," + this.state.grid[0][0] + ")," + color + ", Captured, Grid, Fin)";
+    const X = this.state.originX;
+    const Y = this.state.originY;
+    const queryS = "flick(" + gridS + ",cell(" + X + "," + Y + "," + this.state.grid[X][Y] + ")," + color + ", Captured, Grid, Fin)";
     this.setState({
       waiting: true
     });
@@ -102,6 +109,35 @@ class Game extends React.Component {
   render() {
     if (this.state.grid === null) {
       return null;
+    }
+    if (!this.state.gameStarted) {
+      return (
+        <div className="game">
+          <div className="originSelectPanel">
+            <div className="turnsLab">Choose origin cell:</div>
+            <div className="coordSelectPanel">
+              <div className="turnsLab">X:</div>
+              <select name="select" onChange={e => this.setState({originX: e.target.value})}>
+                {Array.from({ length: 14 }, (x, i) => i).map(j =>
+                  <option key={"x" + j}>{j}</option>
+                )}
+              </select>
+            </div>
+            <div className="coordSelectPanel">
+              <div className="turnsLab">Y:</div>
+              <select name="select" onChange={e => this.setState({originY: e.target.value})}>
+                {Array.from({ length: 14 }, (x, i) => i).map(j =>
+                  <option key={"y" + j}>{j}</option>
+                )}
+              </select>
+            </div>
+            <button
+              className="startBtn"
+              onClick={() => this.setState({gameStarted: true})}
+            >Start</button>
+          </div>
+        </div>
+      );
     }
     return (
       <div className="game">
@@ -130,9 +166,10 @@ class Game extends React.Component {
         <div className="bottomPanel">
           <div className="historyLab">History</div>
           <div className="historyPanel">
-            {this.state.history.map(color =>
+            {this.state.history.map((color, i) =>
               <Square
                 value={color}
+                key={color + i}
               />)}
           </div>
         </div>
