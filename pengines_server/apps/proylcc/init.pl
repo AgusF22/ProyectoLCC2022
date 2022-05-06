@@ -1,10 +1,22 @@
 :- module(init, [ init/1 ]).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% init(-Grid)
+%
+% Inicializa la grilla.
+
 init(X) :-
 	randomInit(X, 14).		% Descomentar para inicializacion aleatoria
 %	defaultInit(X).			% Descomentar para inicializacion por defecto
 %	testInit(X).			% Descomentar para casos de prueba
 		% Solo descomentar una de las tres lineas anteriores a la vez
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% defaultInit(-Grid)
+%
+% Inicializa la grilla en configuracion predeterminada.
 
 defaultInit([
 		 [y,g,b,g,v,y,p,v,b,p,v,p,v,r],
@@ -24,11 +36,23 @@ defaultInit([
 		 ]).
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% testInit(-Grid)
+%
+% Inicializa la grilla en una configuracion de prueba.
+
 testInit(
 
 	% Pegar caso de prueba aqui
 
 ).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% randomInit(-Grid, +RowNumber)
+%
+% Inicializa la grilla con RowNumber filas de forma aleatoria.
 
 randomInit([], 0) :- !.
 randomInit(Grid, RowNumber) :-
@@ -38,6 +62,12 @@ randomInit(Grid, RowNumber) :-
 	RowNumber1 is RowNumber - 1,
 	randomInit(Rows, RowNumber1).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% randomRow(-Row, +Size)
+%
+% Crea una fila de tamaño Size de forma aleatoria.
+
 randomRow([], 0) :- !.
 randomRow(Row, Size) :-
 	Size >= 0,
@@ -45,6 +75,12 @@ randomRow(Row, Size) :-
 	randomColor(Color),
 	Size1 is Size - 1,
 	randomRow(Colors, Size1).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% randomColor(-Color)
+%
+% Devuelve un color aleatorio.
 
 randomColor(Color) :-
 	random_between(0,5,Int),
