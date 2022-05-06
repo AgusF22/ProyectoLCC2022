@@ -1,6 +1,7 @@
 import React from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
+import Square from './Square';
 
 /**
  * List of colors.
@@ -14,12 +15,12 @@ const colors = ["r", "v", "p", "g", "b", "y"];  // red, violet, pink, green, blu
 
 export function colorToCss(color) {
   switch (color) {
-    case "r": return "red";
-    case "v": return "violet";
-    case "p": return "pink";
-    case "g": return "green";
-    case "b": return "blue";
-    case "y": return "yellow";
+    case "r": return "#FF6961";
+    case "v": return "#B19CD8";
+    case "p": return "#FFD1DC";
+    case "g": return "#8FE381";
+    case "b": return "#78C5DC";
+    case "y": return "#FDFD96";
   }
   return color;
 }
@@ -33,6 +34,7 @@ class Game extends React.Component {
       turns: 0,
       grid: null,
       captured: 0,
+      history: [],
       complete: false,  // true if game is complete, false otherwise
       waiting: false
     };
@@ -80,10 +82,12 @@ class Game extends React.Component {
     });
     this.pengine.query(queryS, (success, response) => {
       if (success) {
+        this.state.history.unshift(color);
         this.setState({
           grid: response['Grid'],
           turns: this.state.turns + 1,
           captured: response['Captured'],
+          complete: response['Fin'],
           waiting: false
         });
       } else {
@@ -101,26 +105,37 @@ class Game extends React.Component {
     }
     return (
       <div className="game">
-        <div className="leftPanel">
-          <div className="buttonsPanel">
-            {colors.map(color =>
-              <button
-                className="colorBtn"
-                style={{ backgroundColor: colorToCss(color) }}
-                onClick={() => this.handleClick(color)}
-                key={color}
+        <div className="topPanel">
+          <div className="leftPanel">
+            <div className="buttonsPanel">
+              {colors.map(color =>
+                <button
+                  className="colorBtn"
+                  style={{ backgroundColor: colorToCss(color) }}
+                  onClick={() => this.handleClick(color)}
+                  key={color}
+                />)}
+            </div>
+            <div className="turnsPanel">
+              <div className="turnsLab">Turns</div>
+              <div className="turnsNum">{this.state.turns}</div>
+            </div>
+            <div className="capturedPanel">
+              <div className="capturedLab">Captured</div>
+              <div className="capturedNum">{this.state.captured}</div>
+            </div>
+          </div>
+          <Board grid={this.state.grid} />
+        </div>
+        <div className="bottomPanel">
+          <div className="historyLab">History</div>
+          <div className="historyPanel">
+            {this.state.history.map(color =>
+              <Square
+                value={color}
               />)}
           </div>
-          <div className="turnsPanel">
-            <div className="turnsLab">Turns</div>
-            <div className="turnsNum">{this.state.turns}</div>
-          </div>
-          <div className="capturedPanel">
-            <div className="capturedLab">Captured</div>
-            <div className="capturedNum">{this.state.captured}</div>
-          </div>
         </div>
-        <Board grid={this.state.grid} />
       </div>
     );
   }

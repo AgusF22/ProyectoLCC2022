@@ -4,7 +4,7 @@ import { colorToCss } from './Game';
 class Square extends React.Component {
     render() {
         return (
-            <div style={{ backgroundColor: colorToCss(this.props.value) }} />
+            <div className={"boardCell"} style={{ backgroundColor: colorToCss(this.props.value) }} />
         );
     }
 }

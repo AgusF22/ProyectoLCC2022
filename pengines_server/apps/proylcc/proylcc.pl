@@ -48,9 +48,11 @@ paint(CoordsList, ToPaint, Color, PCoordsList) :-
 	paint(CoordsList1, ToPaint, Color, PCoordsList1),
 	PCoordsList = [cell(X, Y, C) | PCoordsList1].
 
+
 remove(List, E, Res) :-
     append(L1, [E | L2], List),
     append(L1, L2, Res).
+
 
 adjacentsC(_, [], Visited, Visited) :- !.
 adjacentsC(CoordsList, ToVisit, Visited, Res) :-
@@ -63,6 +65,7 @@ adjacentsC(CoordsList, ToVisit, Visited, Res) :-
     Visited1 = [Cell | Visited],
 	adjacentsC(CoordsList, ToVisitNext, Visited1, Res).
 
+
 sameColorAdjacents(Cell, CoordsList, AdjacentsList) :-
 	Cell = cell(X, Y, C),
 	findall(cell(X1, Y1, C), (member(cell(X1, Y1, C), CoordsList),
@@ -74,6 +77,6 @@ sameColorAdjacents(Cell, CoordsList, AdjacentsList) :-
 								Y1 is Y - 1, X1 is X)), AdjacentsList).
 
 
-finished(Captured, 1) :-
+finished(Captured, true) :-
 	Captured is 196, !.
-finished(_, 0).
+finished(_, false).
