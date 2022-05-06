@@ -2,6 +2,7 @@ import React from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
 import Square from './Square';
+import EndGame from './EndGame';
 
 /**
  * List of colors.
@@ -22,10 +23,11 @@ export function colorToCss(color) {
     case "g": toReturn = "#8FE381"; break;
     case "b": toReturn = "#78C5DC"; break;
     case "y": toReturn = "#FDFD96"; break;
-    default:  toReturn = "white";
+    default: toReturn = "white";
   }
   return toReturn;
 }
+
 class Game extends React.Component {
 
   pengine;
@@ -79,7 +81,7 @@ class Game extends React.Component {
     //        [v,v,b,r,p,b,g,g,p,p,b,y,v,p],
     //        [r,p,g,y,v,y,r,b,v,r,b,y,r,v],
     //        [r,b,b,v,p,y,p,r,b,g,p,y,b,r],
-    //        [v,g,p,b,v,v,g,g,g,b,v,g,g,g]],r, Grid)
+    //        [v,g,p,b,v,v,g,g,g,b,v,g,g,g]],cell(0,0,g),r,Captured,Grid,Fin)
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
     const X = this.state.originX;
     const Y = this.state.originY;
@@ -98,7 +100,7 @@ class Game extends React.Component {
           waiting: false
         });
       } else {
-        // Prolog query will fail when the clicked color coincides with that in the top left cell.
+        // Prolog query will fail when the clicked color coincides with that in the origin cell.
         this.setState({
           waiting: false
         });
@@ -114,10 +116,10 @@ class Game extends React.Component {
       return (
         <div className="game">
           <div className="originSelectPanel">
-            <div className="turnsLab">Choose origin cell:</div>
+            <div className="chooseCellLab">Choose origin cell:</div>
             <div className="coordSelectPanel">
               <div className="turnsLab">X:</div>
-              <select name="select" onChange={e => this.setState({originX: e.target.value})}>
+              <select className="selectBox" name="select" onChange={e => this.setState({ originX: e.target.value })}>
                 {Array.from({ length: 14 }, (x, i) => i).map(j =>
                   <option key={"x" + j}>{j}</option>
                 )}
@@ -125,7 +127,7 @@ class Game extends React.Component {
             </div>
             <div className="coordSelectPanel">
               <div className="turnsLab">Y:</div>
-              <select name="select" onChange={e => this.setState({originY: e.target.value})}>
+              <select className="selectBox" name="select" onChange={e => this.setState({ originY: e.target.value })}>
                 {Array.from({ length: 14 }, (x, i) => i).map(j =>
                   <option key={"y" + j}>{j}</option>
                 )}
@@ -133,7 +135,7 @@ class Game extends React.Component {
             </div>
             <button
               className="startBtn"
-              onClick={() => this.setState({gameStarted: true})}
+              onClick={() => this.setState({ gameStarted: true })}
             >Start</button>
           </div>
         </div>
@@ -160,8 +162,9 @@ class Game extends React.Component {
               <div className="capturedLab">Captured</div>
               <div className="capturedNum">{this.state.captured}</div>
             </div>
+            <EndGame end={this.state.complete}/>
           </div>
-          <Board grid={this.state.grid} />
+          <Board grid={this.state.grid}/> 
         </div>
         <div className="bottomPanel">
           <div className="historyLab">History</div>

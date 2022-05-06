@@ -1,6 +1,12 @@
 :- module(init, [ init/1 ]).
 
-init([
+init(X) :-
+	randomInit(X, 14).		% Descomentar para inicializacion aleatoria
+%	defaultInit(X).			% Descomentar para inicializacion por defecto
+%	testInit(X).			% Descomentar para casos de prueba
+		% Solo descomentar una de las tres lineas anteriores a la vez
+
+defaultInit([
 		 [y,g,b,g,v,y,p,v,b,p,v,p,v,r],
 		 [r,r,p,p,g,v,v,r,r,b,g,v,p,r],
 		 [b,v,g,y,b,g,r,g,p,g,p,r,y,y],
@@ -16,3 +22,37 @@ init([
 		 [r,b,b,v,p,y,p,r,b,g,p,y,b,r],
 		 [v,g,p,b,v,v,g,g,g,b,v,g,g,g]
 		 ]).
+
+
+testInit(
+
+	% Pegar caso de prueba aqui
+
+).
+
+randomInit([], 0) :- !.
+randomInit(Grid, RowNumber) :-
+	RowNumber >= 0,
+	Grid = [Row | Rows],
+	randomRow(Row, 14),
+	RowNumber1 is RowNumber - 1,
+	randomInit(Rows, RowNumber1).
+
+randomRow([], 0) :- !.
+randomRow(Row, Size) :-
+	Size >= 0,
+	Row = [Color | Colors],
+	randomColor(Color),
+	Size1 is Size - 1,
+	randomRow(Colors, Size1).
+
+randomColor(Color) :-
+	random_between(0,5,Int),
+	color(Int, Color).
+
+color(0,r).
+color(1,v).
+color(2,p).
+color(3,g).
+color(4,b).
+color(5,y).
