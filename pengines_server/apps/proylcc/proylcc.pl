@@ -7,23 +7,9 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% flick(+Grid, +Color, -FGrid)
-%
-% FGrid es el resultado de hacer 'flick' de la grilla Grid con el color Color.
-% Retorna false si Color coincide con el color de la celda superior izquierda de la grilla. 
-
-flick(Grid, Color, FGrid):-
-	Grid = [F|Fs],
-	F = [X|Xs],
-	Color \= X,
-	FGrid = [[Color|Xs]|Fs].
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
 % flick(+Grid, +Origin, +Color, -Captured, -FGrid, -Finished)
 %
-% FGrid es el resultado de hacer 'flick' de la grilla Grid con el color Color.
+% FGrid es el resultado de hacer flick de la grilla Grid con el color Color.
 % Retorna false si Color coincide con el color de la celda Origen.
 % Finished es un valor booleano que indica si la grilla esta completamente capturada.
 % Captured es la cantidad de celdas capturdas luego del flick.
