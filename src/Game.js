@@ -3,6 +3,7 @@ import PengineClient from './PengineClient';
 import Board from './Board';
 import Square from './Square';
 import EndGame from './EndGame';
+import Help from './Help';
 
 /**
  * List of colors.
@@ -43,15 +44,24 @@ class Game extends React.Component {
       gameStarted: false,
       history: [],
       complete: false,  // true if game is complete, false otherwise
-      waiting: false
+      waiting: false,
+      help: [],
+      helpDepth: 1,
+      helpCaptures: 0,
+      loadingHelp: false,
+      optimalHelp: true
     };
     this.handleClick = this.handleClick.bind(this);
+    this.startGame = this.startGame.bind(this);
+    this.getHelp = this.getHelp.bind(this);
+    this.setHelpDepth = this.setHelpDepth.bind(this);
+    this.setHelpMode = this.setHelpMode.bind(this);
     this.handlePengineCreate = this.handlePengineCreate.bind(this);
     this.pengine = new PengineClient(this.handlePengineCreate);
   }
 
   handlePengineCreate() {
-    const queryS = 'init(Grid)';
+    const queryS = `init(Grid)`;
     this.pengine.query(queryS, (success, response) => {
       if (success) {
         this.setState({
@@ -63,7 +73,7 @@ class Game extends React.Component {
 
   handleClick(color) {
     // No action on click if game is complete or we are waiting.
-    if (this.state.complete || this.state.waiting) {
+    if (this.state.complete || this.state.waiting || this.state.loadingHelp) {
       return;
     }
     // Build Prolog query to apply the color flick.
@@ -83,9 +93,9 @@ class Game extends React.Component {
     //        [r,b,b,v,p,y,p,r,b,g,p,y,b,r],
     //        [v,g,p,b,v,v,g,g,g,b,v,g,g,g]],cell(0,0,g),r,Captured,Grid,Fin)
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
-    const X = this.state.originX;
-    const Y = this.state.originY;
-    const queryS = "flick(" + gridS + ",cell(" + X + "," + Y + "," + this.state.grid[X][Y] + ")," + color + ", Captured, Grid, Fin)";
+    const J = this.state.originX;
+    const I = this.state.originY;
+    const queryS = `flick(${gridS}, cell(${I},${J},${this.state.grid[I][J]}),${color}, Captured, Grid, Fin)`;
     this.setState({
       waiting: true
     });
@@ -108,6 +118,81 @@ class Game extends React.Component {
     });
   }
 
+  startGame() {
+    const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
+    const J = this.state.originX;
+    const I = this.state.originY;
+    const queryS = `captured(${gridS}, cell(${I},${J},${this.state.grid[I][J]}), Captured)`;
+    this.setState({
+      waiting: true
+    });
+    this.pengine.query(queryS, (success, response) => {
+      if (success) {
+        this.setState({
+          captured: response['Captured'],
+          waiting: false
+        });
+      } else {
+        window.alert("startGame error");
+        this.setState({
+          waiting: false
+        });
+      }
+    });
+    this.setState({ gameStarted: true });
+  }
+
+  getHelp() {
+    if (this.state.complete || this.state.waiting || this.state.loadingHelp) {
+      return;
+    }
+    const helpType = this.state.optimalHelp ? "help" : "nonOptHelp";
+    const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
+    const J = this.state.originX;
+    const I = this.state.originY;
+    const depth = this.state.helpDepth;
+    const queryS = `${helpType}(${gridS}, cell(${I},${J},${this.state.grid[I][J]}), ${depth}, Path, Captured)`;
+    this.setState({
+      waiting: true,
+      loadingHelp: true
+    });
+    this.pengine.query(queryS, (success, response) => {
+      if (success) {
+        this.setState({
+          help: response['Path'],
+          helpCaptures: response['Captured'],
+          waiting: false,
+          loadingHelp: false
+        });
+      } else {
+        window.alert("help error");
+        this.setState({
+          waiting: false,
+          loadingHelp: false
+        });
+      }
+    });
+  }
+
+  setHelpDepth(depth) {
+    this.setState({
+      helpDepth: depth
+    });
+  }
+
+  setHelpMode(optimal) {
+    if (optimal && this.state.helpDepth > 5) {
+      this.setState({
+        optimalHelp: optimal,
+        helpDepth: 1
+      });
+    } else {
+      this.setState({
+        optimalHelp: optimal,
+      });
+    }
+  }
+
   render() {
     if (this.state.grid === null) {
       return null;
@@ -118,24 +203,24 @@ class Game extends React.Component {
           <div className="originSelectPanel">
             <div className="chooseCellLab">Choose origin cell:</div>
             <div className="coordSelectPanel">
-              <div className="turnsLab">X:</div>
-              <select className="selectBox" name="select" onChange={e => this.setState({ originX: e.target.value })}>
+              <div className="textLabel">X:</div>
+              <select className="selectBox" name="select" onChange={e => this.setState({ originX: parseInt(e.target.value) })}>
                 {Array.from({ length: 14 }, (x, i) => i).map(j =>
                   <option key={"x" + j}>{j}</option>
                 )}
               </select>
             </div>
             <div className="coordSelectPanel">
-              <div className="turnsLab">Y:</div>
-              <select className="selectBox" name="select" onChange={e => this.setState({ originY: e.target.value })}>
+              <div className="textLabel">Y:</div>
+              <select className="selectBox" name="select" onChange={e => this.setState({ originY: parseInt(e.target.value) })}>
                 {Array.from({ length: 14 }, (x, i) => i).map(j =>
                   <option key={"y" + j}>{j}</option>
                 )}
               </select>
             </div>
             <button
-              className="startBtn"
-              onClick={() => this.setState({ gameStarted: true })}
+              className="textBtn"
+              onClick={() => this.startGame()}
             >Start</button>
           </div>
         </div>
@@ -155,16 +240,20 @@ class Game extends React.Component {
                 />)}
             </div>
             <div className="turnsPanel">
-              <div className="turnsLab">Turns</div>
+              <div className="textLabel">Turns</div>
               <div className="turnsNum">{this.state.turns}</div>
             </div>
             <div className="capturedPanel">
-              <div className="capturedLab">Captured</div>
+              <div className="textLabel">Captured</div>
               <div className="capturedNum">{this.state.captured}</div>
             </div>
-            <EndGame end={this.state.complete}/>
+            {this.state.complete && <EndGame />}
           </div>
-          <Board grid={this.state.grid}/> 
+          <Board grid={this.state.grid} originX={this.state.originX} originY={this.state.originY} />
+          <Help setHelpDepth={this.setHelpDepth} getHelp={this.getHelp}
+            help={this.state.help} loadingHelp={this.state.loadingHelp}
+            setHelpMode={this.setHelpMode} optimalHelp={this.state.optimalHelp}
+            helpCaptures={this.state.helpCaptures} />
         </div>
         <div className="bottomPanel">
           <div className="historyLab">History</div>

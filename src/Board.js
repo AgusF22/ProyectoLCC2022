@@ -10,6 +10,7 @@ class Board extends React.Component {
                         <Square
                             value={cell}
                             key={i + "." + j}
+                            origin={this.props.originX === j && this.props.originY === i}
                         />
                     )
                 )}

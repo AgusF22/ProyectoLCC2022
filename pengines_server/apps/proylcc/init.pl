@@ -6,10 +6,10 @@
 %
 % Inicializa la grilla.
 
-init(X) :-
-	randomInit(X, 14).		% Descomentar para inicializacion aleatoria
-%	defaultInit(X).			% Descomentar para inicializacion por defecto
-%	testInit(X).			% Descomentar para casos de prueba
+init(Grid) :-
+	randomInit(Grid, 14).		% Descomentar para inicializacion aleatoria
+%	defaultInit(Grid).			% Descomentar para inicializacion por defecto
+%	testInit(Grid).				% Descomentar para casos de prueba
 		% Solo descomentar una de las tres lineas anteriores a la vez
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
