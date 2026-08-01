@@ -26,8 +26,6 @@
         </style>
         <script type="text/javascript">
             function start() {
-                // Added to enable cors for all domains by default.
-                // $.get('/admin/set_settings?name=http:cors&value=[*]');
                 $.get('/admin/show_settings?type=server', function(obj) {
                     $('#server-settings').html(settings_to_table(obj.settings))
                     install_handlers(obj.settings);

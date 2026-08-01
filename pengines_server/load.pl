@@ -28,7 +28,3 @@ http:location(swish, apps(swish), [priority(10)]).
 :- use_module(apps(proylcc/app)).
 :- endif.
 
-% access at /apps/genealogistcopy/index.html
-:- if(exists_source(apps(genealogistcopy/app))).
-:- use_module(apps(genealogistcopy/app)).
-:- endif.
